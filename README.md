@@ -1,18 +1,153 @@
-Instagib game with modern UI support built in. The idea in short:
+# LG Train
 
-Maps have no pick-ups.
-you don’t take damage from environment, unless it’s a killswitch (falling off the map, being crushed). No partial damage ever.
-Railgun has an alternate fire “rail-jump” basically spawning an invisible rocket to let you jump. Ideally a new visual effect. This does not push or in any way affect enemy players. This is on it’s own cooldown unlike insta-unlagged where the cd is shared between normal shot and rail-jump (which means most players never railjump while an enemy is in sight.) The idea being that you can fly through the air while killing your opponents - if you are awesome enough.
-if you kill an enemy, once the kill is resolved on the server your shot cooldown on the railgun is reset, meaning you can kill many players in a short time - if you are awesome enough.
-Extras:
+A lightning gun (shaft) tracking trainer for ioquake3. It's built on an
+[instagib fork](https://github.com/rx-mikkel/instagib) of ioquake3.
 
-Streamline the UI, since the game is now very simple armor, health and weapon info goes away. Score and maybe accuracy are the only things displayed.
-More rail colors to choose from
-Heat shimmer effect around the railgun ray
+Everyone spawns with only the lightning gun and infinite ammo, and there are
+no pickups. Hitting a player doesn't damage them; it heats them up. Keep the
+beam on a target long enough and they pop (gib), like in instagib. As soon as
+the beam comes off, they cool down quickly. The goal is to train keeping your
+crosshair on a moving target for a long time.
 
+## Install
 
+You need the retail Quake 3 data (`baseq3/pak0.pk3` to `pak8.pk3`) and
+ioquake3.
 
-Based on Ioquake3
+Build `lgtrain.pk3` (see [Build](#build)). Then copy it and
+`mod/description.txt` into a `lgtrain` folder in your Quake 3 home directory:
+
+| OS      | Folder                                         |
+|---------|------------------------------------------------|
+| macOS   | `~/Library/Application Support/Quake3/lgtrain/` |
+| Linux   | `~/.q3a/lgtrain/`                              |
+| Windows | `%APPDATA%\Quake3\lgtrain\`                    |
+
+## Play
+
+Pick **LG Train** in the Mods menu, or start it directly:
+
+```
+ioquake3 +set fs_game lgtrain +map q3dm6 +addbot sarge 2
+```
+
+On macOS:
+
+```
+open -a ioquake3 --args +set fs_game lgtrain +map q3dm6 +addbot sarge 2
+```
+
+## Tuning
+
+### How heat works
+
+- Heat goes from 0 to 100. A player pops when their heat reaches 100.
+- The shaft fires every 50 ms, so a perfectly tracked target takes 20 hits
+  per second.
+- Each hit adds `g_heatPerHit` heat.
+- Cooling starts once a player hasn't been hit for `g_heatCoolDelay` ms. Heat
+  then drains at `g_heatCoolRate` per second.
+
+### Warm-up and cool-down (server settings)
+
+The host of the game sets these. In a local game, the host is you. Open the
+console with `~` and type, for example, `g_heatPerHit 4`. Changes take effect
+immediately and are announced in the game.
+
+| Cvar              | Default | What it controls |
+|-------------------|---------|------------------|
+| `g_heatPerHit`    | `5`     | **Warm-up rate.** Heat added per hit. A perfectly tracked target pops after 100 / `g_heatPerHit` hits. |
+| `g_heatCoolDelay` | `100`   | **Grace period.** Milliseconds after the last hit before cooling starts. |
+| `g_heatCoolRate`  | `100`   | **Cool-down speed.** Heat drained per second. A target at full heat cools completely in 100 / `g_heatCoolRate` seconds. |
+
+How `g_heatPerHit` translates to tracking time:
+
+| `g_heatPerHit` | Hits to pop | Tracking time |
+|----------------|-------------|---------------|
+| `10`           | 10          | ~0.5 s        |
+| `5`            | 20          | ~1 s          |
+| `4`            | 25          | ~1.25 s       |
+| `2.5`          | 40          | ~2 s          |
+| `2`            | 50          | ~2.5 s        |
+
+Notes:
+
+- Keep `g_heatCoolDelay` at 50 or higher. The server updates heat every 50 ms,
+  so a lower value makes targets cool down between your shots even when you
+  hit every one.
+- To make training harder, lower `g_heatPerHit`, or raise `g_heatCoolRate`, or
+  lower `g_heatCoolDelay`. Do the opposite to make it easier.
+
+Example presets:
+
+```
+// easy: pops in ~0.5 s, forgiving cool-down
+g_heatPerHit 10; g_heatCoolDelay 150; g_heatCoolRate 50
+
+// hard: pops in ~1.7 s, little room for misses
+g_heatPerHit 3; g_heatCoolDelay 50; g_heatCoolRate 200
+```
+
+The `g_heat*` settings are not saved between sessions. To keep your own values,
+put them in `autoexec.cfg` inside the `lgtrain` folder. It runs on every start:
+
+```
+set g_heatPerHit 4
+set g_heatCoolDelay 100
+set g_heatCoolRate 150
+```
+
+You can also pass them on the command line, e.g. `+set g_heatPerHit 4`.
+
+### Visuals (client settings)
+
+These are saved automatically.
+
+| Cvar           | Default | What it controls |
+|----------------|---------|------------------|
+| `cg_heatShell` | `1`     | Glow on heated players, going dark red to orange to white. `0` turns it off. |
+| `cg_drawHeat`  | `1`     | Heat bars: one under the crosshair for the player you're aiming at, and one above the status bar for your own heat. `0` hides them. |
+
+The glow is defined by the `shaftHeatShell` shader in
+`mod/scripts/lgtrain.shader`. If you edit it, rebuild the pk3.
+
+## Build
+
+The mod builds like any ioquake3 game code (see the ioquake3 instructions
+below). To build only the mod's QVMs:
+
+```
+make BUILD_CLIENT=0 BUILD_SERVER=0 BUILD_GAME_SO=0 BUILD_MISSIONPACK=0
+```
+
+Then pack the QVMs and the shader into `build/lgtrain.pk3`, which is a plain
+zip. Replace `release-darwin-arm64` with your platform's build directory:
+
+```
+mkdir -p build/pk3/vm build/pk3/scripts
+cp build/release-darwin-arm64/baseq3/vm/*.qvm build/pk3/vm/
+cp mod/scripts/lgtrain.shader build/pk3/scripts/
+cd build/pk3 && zip -r ../lgtrain.pk3 vm scripts
+```
+
+## Code
+
+Every change on top of the instagib fork is marked with `//SHAFT`:
+
+- `code/game/g_weapon.c`, `LightningHeat`: adds heat on a hit and pops the
+  target at `HEAT_MAX` (in `code/game/g_local.h`).
+- `code/game/g_active.c`, `ClientHeatCool`: cools players down every server
+  frame.
+- `code/game/g_main.c`: the `g_heat*` cvars and their defaults.
+- `code/cgame/cg_players.c`: the heat glow on player models.
+- `code/cgame/cg_draw.c`: the heat bars and the heat color ramp
+  (`CG_HeatColor`).
+
+Players' heat is sent to clients in `playerState.generic1` (0 to 255).
+
+---
+
+*The rest of this file is the original ioquake3 README.*
 
 # Compilation and installation
 

@@ -1100,6 +1100,26 @@ void SpectatorClientEndFrame( gentity_t *ent ) {
 
 /*
 ==============
+ClientHeatCool
+
+SHAFT: heat drains once the client hasn't been hit for g_heatCoolDelay msec
+==============
+*/
+static void ClientHeatCool( gentity_t *ent ) {
+	gclient_t	*client;
+
+	client = ent->client;
+	if ( client->heat > 0 && level.time - client->heatLastHitTime > g_heatCoolDelay.integer ) {
+		client->heat -= g_heatCoolRate.value * ( level.time - level.previousTime ) * 0.001f;
+		if ( client->heat < 0 ) {
+			client->heat = 0;
+		}
+	}
+	client->ps.generic1 = client->heat * 255 / HEAT_MAX;
+}
+
+/*
+==============
 ClientEndFrame
 
 Called at the end of each server frame for each connected client
@@ -1173,6 +1193,8 @@ void ClientEndFrame( gentity_t *ent ) {
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;	// FIXME: get rid of ent->health...
 
 	G_SetClientSound (ent);
+
+	ClientHeatCool( ent );
 
 	// set the latest infor
 	if (g_smoothClients.integer) {

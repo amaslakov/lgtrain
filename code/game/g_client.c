@@ -1176,8 +1176,9 @@ void ClientSpawn(gentity_t *ent) {
 	client->ps.ammo[WP_GRAPPLING_HOOK] = -1;
 
 	//OERUM
-	client->ps.stats[STAT_WEAPONS] = (1 << WP_RAILGUN);
-	client->ps.ammo[WP_RAILGUN] = 999;
+	//SHAFT shaft only, 999 is infinite (see PM_Weapon)
+	client->ps.stats[STAT_WEAPONS] = (1 << WP_LIGHTNING);
+	client->ps.ammo[WP_LIGHTNING] = 999;
 
 	// health will count down towards max_health
 	ent->health = client->ps.stats[STAT_HEALTH] = client->ps.stats[STAT_MAX_HEALTH] + 25;

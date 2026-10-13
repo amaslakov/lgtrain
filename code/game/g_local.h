@@ -42,6 +42,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	INTERMISSION_DELAY_TIME	1000
 #define	SP_INTERMISSION_DELAY_TIME	5000
 
+//SHAFT heat at which a client pops, sent to clients scaled to 0-255 in ps.generic1
+#define	HEAT_MAX				100
+
 // gentity->flags
 #define	FL_GODMODE				0x00000010
 #define	FL_NOTARGET				0x00000020
@@ -308,6 +311,10 @@ struct gclient_s {
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
 	int			timeResidual;
+
+	//SHAFT shaft hits warm the client up, it pops at HEAT_MAX
+	float		heat;
+	int			heatLastHitTime;
 
 #ifdef MISSIONPACK
 	gentity_t	*persistantPowerup;
@@ -745,6 +752,9 @@ extern	vmCvar_t	g_enableBreath;
 extern	vmCvar_t	g_singlePlayer;
 extern	vmCvar_t	g_proxMineTimeout;
 extern	vmCvar_t	g_localTeamPref;
+extern	vmCvar_t	g_heatPerHit;
+extern	vmCvar_t	g_heatCoolDelay;
+extern	vmCvar_t	g_heatCoolRate;
 
 void	trap_Print( const char *text );
 void	trap_Error( const char *text ) __attribute__((noreturn));

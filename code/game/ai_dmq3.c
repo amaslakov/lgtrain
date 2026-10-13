@@ -1571,7 +1571,7 @@ void BotChooseWeapon(bot_state_t *bs) {
 	else {
 		//OERUM we want to comment out this line since we only have the railgun
 		//newweaponnum = trap_BotChooseBestFightWeapon(bs->ws, bs->inventory);
-		newweaponnum = WP_RAILGUN; //We only have one weapon so let's choose it.
+		newweaponnum = WP_LIGHTNING; //We only have one weapon so let's choose it.
 		if (bs->weaponnum != newweaponnum) bs->weaponchange_time = FloatTime();
 		bs->weaponnum = newweaponnum;
 		//BotAI_Print(PRT_MESSAGE, "bs->weaponnum = %d\n", bs->weaponnum);

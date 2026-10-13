@@ -2193,6 +2193,68 @@ static void CG_DrawCrosshairNames( void ) {
 }
 
 
+/*
+=================
+CG_HeatColor
+
+SHAFT: heat 0-1 to an incandescent ramp, dark red -> orange -> white
+=================
+*/
+void CG_HeatColor( float heat, vec4_t color ) {
+	color[0] = Com_Clamp( 0, 1, heat * 1.5f );
+	color[1] = Com_Clamp( 0, 1, heat * heat * 1.2f );
+	color[2] = heat * heat * heat * heat;
+	color[3] = 1;
+}
+
+/*
+=================
+CG_DrawHeatBar
+=================
+*/
+static void CG_DrawHeatBar( float x, float y, float w, float h, float heat, float alpha ) {
+	vec4_t		color;
+
+	color[0] = color[1] = color[2] = 0;
+	color[3] = 0.5f * alpha;
+	CG_FillRect( x, y, w, h, color );
+
+	CG_HeatColor( heat, color );
+	color[3] = alpha;
+	CG_FillRect( x, y, w * heat, h, color );
+}
+
+/*
+=================
+CG_DrawHeat
+
+SHAFT: heat of the player under the crosshair, and our own while warm
+=================
+*/
+static void CG_DrawHeat( void ) {
+	centity_t	*cent;
+	float		*fade;
+
+	if ( !cg_drawHeat.integer ) {
+		return;
+	}
+
+	// target bar lingers after the target leaves the crosshair, like the name
+	CG_ScanForCrosshairEntity();
+	fade = CG_FadeColor( cg.crosshairClientTime, 1000 );
+	cent = &cg_entities[ cg.crosshairClientNum ];
+	if ( fade && cent->currentValid ) {
+		CG_SetScreenPlacement( PLACE_CENTER, PLACE_CENTER );
+		CG_DrawHeatBar( 320 - 40, 260, 80, 6, cent->currentState.generic1 / 255.0f, fade[3] );
+	}
+
+	if ( cg.snap->ps.generic1 ) {
+		CG_SetScreenPlacement( PLACE_CENTER, PLACE_BOTTOM );
+		CG_DrawHeatBar( 320 - 80, 380, 160, 8, cg.snap->ps.generic1 / 255.0f, 1 );
+	}
+}
+
+
 //==============================================================================
 
 /*
@@ -2710,6 +2772,7 @@ static void CG_Draw2D(stereoFrame_t stereoFrame)
 			if(stereoFrame == STEREO_CENTER)
 				CG_DrawCrosshair();
 			CG_DrawCrosshairNames();
+			CG_DrawHeat();
 			CG_DrawWeaponSelect();
 
 #ifndef MISSIONPACK

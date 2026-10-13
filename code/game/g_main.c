@@ -82,6 +82,9 @@ vmCvar_t	pmove_msec;
 vmCvar_t	g_rankings;
 vmCvar_t	g_listEntity;
 vmCvar_t	g_localTeamPref;
+vmCvar_t	g_heatPerHit;
+vmCvar_t	g_heatCoolDelay;
+vmCvar_t	g_heatCoolRate;
 #ifdef MISSIONPACK
 vmCvar_t	g_obeliskHealth;
 vmCvar_t	g_obeliskRegenPeriod;
@@ -178,7 +181,12 @@ static cvarTable_t		gameCvarTable[] = {
 	{ &pmove_msec, "pmove_msec", "8", CVAR_SYSTEMINFO, 0, qfalse},
 
 	{ &g_rankings, "g_rankings", "0", 0, 0, qfalse},
-	{ &g_localTeamPref, "g_localTeamPref", "", 0, 0, qfalse }
+	{ &g_localTeamPref, "g_localTeamPref", "", 0, 0, qfalse },
+
+	//SHAFT the shaft fires every 50 msec, so 5 per hit pops after 1 sec of tracking
+	{ &g_heatPerHit, "g_heatPerHit", "5", 0, 0, qtrue },
+	{ &g_heatCoolDelay, "g_heatCoolDelay", "100", 0, 0, qtrue },
+	{ &g_heatCoolRate, "g_heatCoolRate", "100", 0, 0, qtrue }
 
 };
 

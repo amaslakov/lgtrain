@@ -2183,6 +2183,18 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, entityState_t *state, int te
 			ent->customShader = cgs.media.battleSuitShader;
 			trap_R_AddRefEntityToScene( ent );
 		}
+		//SHAFT heat shell, generic1 is the heat scaled to 0-255
+		if ( state->generic1 && cg_heatShell.integer && cgs.media.heatShellShader ) {
+			vec4_t	color;
+
+			CG_HeatColor( state->generic1 / 255.0f, color );
+			ent->shaderRGBA[0] = color[0] * 255;
+			ent->shaderRGBA[1] = color[1] * 255;
+			ent->shaderRGBA[2] = color[2] * 255;
+			ent->shaderRGBA[3] = 255;
+			ent->customShader = cgs.media.heatShellShader;
+			trap_R_AddRefEntityToScene( ent );
+		}
 	}
 }
 

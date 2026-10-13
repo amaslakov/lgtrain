@@ -1293,7 +1293,7 @@ BotSelectActivateWeapon
 */
 //OERUM replaced
 int BotSelectActivateWeapon(bot_state_t* bs) {
-	return WEAPONINDEX_RAILGUN;
+	return WEAPONINDEX_LIGHTNING;
 }
 /*
 int BotSelectActivateWeapon(bot_state_t *bs) {

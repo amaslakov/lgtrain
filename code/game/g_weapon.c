@@ -605,6 +605,40 @@ LIGHTNING GUN
 ======================================================================
 */
 
+/*
+================
+LightningHeat
+
+SHAFT: a hit warms the target up instead of damaging it,
+once fully heated the target pops
+================
+*/
+static void LightningHeat( gentity_t *targ, gentity_t *attacker, vec3_t point ) {
+	gclient_t	*client;
+
+	client = targ->client;
+	if ( targ->health <= 0 ) {
+		return;
+	}
+	if ( OnSameTeam( targ, attacker ) && !g_friendlyFire.integer ) {
+		return;
+	}
+
+	client->heat += g_heatPerHit.value;
+	client->heatLastHitTime = level.time;
+
+	if ( client->heat < HEAT_MAX ) {
+		client->ps.generic1 = client->heat * 255 / HEAT_MAX;
+		// hit beep, G_Damage does it for the popping hit
+		attacker->client->ps.persistant[PERS_HITS]++;
+		return;
+	}
+
+	client->heat = 0;
+	client->ps.generic1 = 0;
+	G_Damage( targ, attacker, attacker, forward, point, 999, DAMAGE_NO_ARMOR | DAMAGE_NO_KNOCKBACK, MOD_LIGHTNING );
+}
+
 void Weapon_LightningFire( gentity_t *ent ) {
 	trace_t		tr;
 	vec3_t		end;
@@ -661,7 +695,12 @@ void Weapon_LightningFire( gentity_t *ent ) {
 			if( LogAccuracyHit( traceEnt, ent ) ) {
 				ent->client->accuracy_hits++;
 			}
-			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, 0, MOD_LIGHTNING);
+			//SHAFT players heat up, everything else takes normal damage
+			if ( traceEnt->client ) {
+				LightningHeat( traceEnt, ent, tr.endpos );
+			} else {
+				G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, 0, MOD_LIGHTNING);
+			}
 		}
 
 		if ( traceEnt->takedamage && traceEnt->client ) {
