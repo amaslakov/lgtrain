@@ -14,10 +14,14 @@ crosshair on a moving target for a long time.
 You need the retail Quake 3 data (`baseq3/pak0.pk3` to `pak8.pk3`) and
 ioquake3.
 
-Build `lgtrain.pk3` (see [Build](#build)). Then copy it and
-`mod/description.txt` into a `lgtrain` folder in your Quake 3 home directory:
+Download `lgtrain-vX.Y.Z.zip` from
+[Releases](https://github.com/amaslakov/lgtrain/releases) and extract it into
+your Quake 3 home directory, so you get a `lgtrain` folder with
+`lgtrain.pk3` and `description.txt` in it. The pk3 is platform-independent.
+To build it yourself instead, see [Build](#build) and copy `lgtrain.pk3` and
+`mod/description.txt` into that folder.
 
-| OS      | Folder                                         |
+| OS      | `lgtrain` folder                               |
 |---------|------------------------------------------------|
 | macOS   | `~/Library/Application Support/Quake3/lgtrain/` |
 | Linux   | `~/.q3a/lgtrain/`                              |
